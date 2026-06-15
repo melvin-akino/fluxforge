@@ -1,6 +1,6 @@
 // HTTP adapter — talks to Express/SQLite server via fetch().
 
-const BASE = () => import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8081';
+const BASE = () => import.meta.env?.VITE_API_BASE_URL ?? '';
 
 async function request(path, options = {}) {
   const res = await fetch(`${BASE()}${path}`, {
