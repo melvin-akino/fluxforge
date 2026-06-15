@@ -1491,10 +1491,8 @@ const optimizing       = ref(false);
 const optimizeResult   = ref(null);  // { before, after, improvements }
 const propsDraft       = ref(null);  // editable copy of design meta/spec
 
-// ── Schematic → Tree Panel bridge ────────────────────────────────────────────
-function onSchematicComponentClick(refDes) {
-  // Forward the click to the tree panel's openByRefDes method
-  treePanelRef.value?.openByRefDes(refDes);
+function onSchematicComponentClick(_refDes) {
+  // Side panel editor in SchematicDiagram handles the edit interaction
 }
 const exportingPDF     = ref(false);
 const exportingCAD     = ref(false);
