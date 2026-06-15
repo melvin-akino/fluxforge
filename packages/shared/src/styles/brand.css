@@ -1,0 +1,84 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+ * FluxForge Brand Theme — Shared CSS Variables
+ * Primary: #0D7377 (Teal)  |  Secondary: #14A085  |  Accent: #2ECC71
+ * ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --ff-primary:       #0D7377;
+  --ff-primary-dark:  #0A5C60;
+  --ff-primary-light: #129499;
+  --ff-secondary:     #14A085;
+  --ff-secondary-mid: #11876F;
+  --ff-secondary-dark:#0D6B58;
+  --ff-accent:        #2ECC71;
+  --ff-accent-light:  #52D98A;
+  --ff-highlight:     #E67E22;
+
+  --bg:             #F4F6F9;
+  --surface:        #FFFFFF;
+  --surface-2:      #EEF7F6;
+  --surface-3:      #E2F0EF;
+  --border:         #C8DDD9;
+  --border-strong:  #A8C8C4;
+
+  --text:           #1A1A1A;
+  --text-muted:     #4A6A68;
+  --text-faint:     #7A9896;
+
+  --accent:         #0D7377;
+  --accent-hover:   #0A5C60;
+  --success:        #38A169;
+  --success-bg:     #F0FFF4;
+  --danger:         #C0392B;
+  --danger-bg:      #FFF5F5;
+  --warning:        #D97706;
+  --warning-bg:     #FFFBEB;
+  --info:           #0D7377;
+  --info-bg:        #E8F7F7;
+  --input-bg:       #FFFFFF;
+
+  --font-body:      'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:      'Consolas', 'Courier New', monospace;
+
+  --radius-xs:      2px;
+  --radius-sm:      4px;
+  --radius:         6px;
+  --radius-lg:      10px;
+  --radius-xl:      16px;
+
+  --shadow-sm:      0 1px 3px rgba(0,50,50,.08);
+  --shadow:         0 4px 12px rgba(0,50,50,.12);
+  --shadow-lg:      0 8px 32px rgba(0,50,50,.18);
+  --shadow-xl:      0 16px 48px rgba(0,50,50,.22);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height:100%; font-family:var(--font-body); font-size:14px;
+  line-height:1.5; color:var(--text); background:var(--bg);
+  -webkit-font-smoothing:antialiased; }
+#app { height:100%; }
+a { color:var(--ff-primary); text-decoration:none; }
+a:hover { color:var(--ff-secondary-mid); }
+
+.ff-btn-primary {
+  background:var(--ff-primary); color:#fff; border:none;
+  padding:.45rem 1.2rem; border-radius:var(--radius-sm);
+  font-weight:600; font-size:.875rem; cursor:pointer; transition:background .15s;
+}
+.ff-btn-primary:hover { background:var(--ff-primary-dark); }
+
+.ff-btn-secondary {
+  background:#fff; color:var(--ff-secondary); border:1.5px solid var(--border-strong);
+  padding:.45rem 1.2rem; border-radius:var(--radius-sm);
+  font-weight:600; font-size:.875rem; cursor:pointer; transition:all .15s;
+}
+.ff-btn-secondary:hover { border-color:var(--ff-secondary); background:var(--surface-2); }
+
+.ff-badge { font-size:.65rem; font-weight:700; padding:.1rem .42rem; border-radius:3px; color:#fff; }
+.ff-badge-primary   { background:var(--ff-primary); }
+.ff-badge-secondary { background:var(--ff-secondary); }
+.ff-badge-accent    { background:var(--ff-accent); }
+
+.ff-card { background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:1rem; box-shadow:var(--shadow-sm); }
+.ff-panel-header { background:var(--ff-secondary); color:#fff;
+  padding:.5rem .9rem; font-size:.82rem; font-weight:700; }

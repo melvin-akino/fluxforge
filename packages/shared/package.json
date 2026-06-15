@@ -1,0 +1,16 @@
+{
+  "name": "@fluxforge/shared",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./api": "./src/api/index.js",
+    "./stores/*": "./src/stores/*.js",
+    "./components/*": "./src/components/*.vue"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0",
+    "pinia": "^2.0.0"
+  }
+}

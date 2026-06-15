@@ -1,0 +1,25 @@
+{
+  "name": "fluxforge",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:server": "pnpm --filter fluxforge-server start",
+    "dev:web": "pnpm --filter PIWeb dev",
+    "dev:desktop": "pnpm --filter PITauri tauri:dev",
+    "dev:all": "concurrently -n server,web -c cyan,green \"pnpm dev:server\" \"pnpm dev:web\"",
+    "build:web": "pnpm --filter PIWeb build",
+    "build:desktop": "pnpm --filter PITauri tauri:build",
+    "build:all": "pnpm --filter PIWeb build && pnpm --filter PITauri tauri:build",
+    "install:all": "pnpm install",
+    "test": "node --test tests/sim-engine.test.js tests/uds-schema.test.js tests/core-logic.test.js",
+    "test:sim": "node --test tests/sim-engine.test.js",
+    "test:schema": "node --test tests/uds-schema.test.js",
+    "test:logic": "node --test tests/core-logic.test.js",
+    "test:api": "node --test tests/server-api.test.js",
+    "test:all": "node --test tests/",
+    "test:verbose": "node --test --test-reporter=spec tests/sim-engine.test.js tests/uds-schema.test.js tests/core-logic.test.js"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

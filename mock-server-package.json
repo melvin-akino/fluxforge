@@ -1,0 +1,12 @@
+{
+  "name": "mock-server",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node mock-server.js"
+  },
+  "dependencies": {
+    "cors":    "^2.8.5",
+    "express": "^4.19.0"
+  }
+}

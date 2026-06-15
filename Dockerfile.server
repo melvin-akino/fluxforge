@@ -1,0 +1,27 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy workspace manifests
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
+COPY server/package.json ./server/
+
+# Install only server deps
+RUN pnpm install --frozen-lockfile --filter fluxforge-server
+
+# Copy server source
+COPY server/ ./server/
+
+# SQLite data directory (mount a named volume here)
+RUN mkdir -p /data
+
+ENV PORT=8081
+ENV DB_PATH=/data/fluxforge.db
+ENV UPLOAD_DIR=/data/uploads
+
+EXPOSE 8081
+
+CMD ["node", "server/index.js"]

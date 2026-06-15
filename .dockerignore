@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+dist
+**/dist
+.git
+.claude
+*.db
+*.log
+PITauri/src-tauri/target
+target
+.env
+.env.local
+server/uploads
