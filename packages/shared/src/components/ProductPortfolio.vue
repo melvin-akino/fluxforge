@@ -59,7 +59,7 @@
           <div class="pp-selected-label" v-else>Select an application from the list</div>
           <div class="pp-footer-btns">
             <button class="pp-btn pp-btn-blue" :disabled="!selectedApp" @click="launchFluxForge">Launch</button>
-            <button class="pp-btn pp-btn-blue" :disabled="!selectedApp" @click="launchPIXls">PI Xls</button>
+            <button class="pp-btn pp-btn-blue" :disabled="!selectedApp" @click="launchFluxLS">FluxLS</button>
             <button class="pp-btn pp-btn-outline" @click="openHelp">Help</button>
             <button class="pp-btn pp-btn-cancel" @click="$emit('cancel')">Cancel</button>
           </div>
@@ -269,7 +269,7 @@ function launchFluxForge() {
     inputSpec,
   });
 }
-function launchPIXls() {
+function launchFluxLS() {
   if (!selectedApp.value) return;
   const fam = selectedFamily.value;
   const { topology, inputSpec } = parseAppString(selectedApp.value);

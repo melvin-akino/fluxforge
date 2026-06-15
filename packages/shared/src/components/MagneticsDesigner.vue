@@ -1817,7 +1817,7 @@ const WIRE = [
   {awg:20,dia:0.812,area_mm2:0.5176},{awg:18,dia:1.024,area_mm2:0.8231},
   {awg:16,dia:1.291,area_mm2:1.3087},{awg:14,dia:1.628,area_mm2:2.0812},
 ];
-// Winding colours matching PI Expert: primary=blue, secondary=red, bias=orange
+// Winding colours: primary=blue, secondary=red, bias=orange
 const WCOL = { primary:'#1a56e8', secondary:'#0066A6', bias:'#ea7c0a', extra:'#7c3aed' };
 
 const PRESETS = [
@@ -3310,7 +3310,7 @@ select.md-inp { width: 80px; }
 /* PANEL 6: INSTRUCTIONS                                                        */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 .instr-body { overflow-y: auto; display: flex; flex-direction: column; }
-/* Formatting toolbar — matches PI Expert screenshot closely */
+/* Formatting toolbar */
 .instr-toolbar {
   display: flex; align-items: center; gap: .1rem; flex-wrap: wrap;
   padding: .25rem .4rem; background: #f4f5f8;
@@ -3338,7 +3338,7 @@ select.md-inp { width: 80px; }
   margin-bottom: .5rem; padding-bottom: .25rem;
   border-bottom: 1px solid #e0e4ea;
 }
-/* BOM table — matches PI Expert screenshot style */
+/* BOM table */
 .bom-table { width: 100%; border-collapse: collapse; font-size: .73rem; }
 .bom-table th {
   background: #f0f2fa; color: #444; padding: .25rem .5rem;

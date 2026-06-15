@@ -69,7 +69,7 @@ describe('GET /api/health', () => {
 
 // ── Auth ───────────────────────────────────────────────────────────────────────
 describe('Auth API', () => {
-  const testEmail = `test_${Date.now()}@piexpert.test`;
+  const testEmail = `test_${Date.now()}@fluxforge.test`;
   const testPass  = 'TestPass123!';
   const testName  = 'Test User';
 

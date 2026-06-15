@@ -3098,7 +3098,7 @@ function generateKiCadSchematic({ fileName, family, topology, vMin, vMax, vout, 
     (comment 4 "PROOF OF CONCEPT — Verify all values before PCB fabrication")
   )`;
 
-  return `(kicad_sch (version 20230121) (generator pi_expert_cad_export)
+  return `(kicad_sch (version 20230121) (generator fluxforge_cad_export)
 
   (paper "A3")
 ${titleBlock}
