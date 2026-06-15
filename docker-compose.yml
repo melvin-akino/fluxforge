@@ -13,7 +13,7 @@ services:
     volumes:
       - fluxforge-data:/data
     ports:
-      - "8081:8081"
+      - "8099:8081"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8081/api/health"]
       interval: 10s
@@ -25,7 +25,7 @@ services:
       context: .
       dockerfile: Dockerfile.web
     ports:
-      - "5174:80"
+      - "5200:80"
     depends_on:
       server:
         condition: service_healthy
