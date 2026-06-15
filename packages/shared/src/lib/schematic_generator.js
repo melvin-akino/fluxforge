@@ -180,7 +180,7 @@ function _genHPFC(uds, comps, result, meta, hitBoxes) {
   hitBoxes['F1'] = bbox(f1);
 
   // ── RT1 NTC ──
-  const rt1 = new Resistor({ orient:'h', n: shift(f1.p, 20, 0), name:'RT1', value: cv(comps,'RT1','value')||'8Ω NTC' });
+  const rt1 = new Resistor({ orient:'h', n: shift(f1.o, 20, 0), name:'RT1', value: cv(comps,'RT1','value')||'8Ω NTC' });
   hitBoxes['RT1'] = bbox(rt1);
 
   // ── L1 EMI Choke ──
@@ -195,7 +195,7 @@ function _genHPFC(uds, comps, result, meta, hitBoxes) {
 
   // Wire: top rail → F1 → RT1 → L1 → BR1 AC1
   wire([xAC, Y_MID-90], [xAC, Y_TOP]);
-  wire([xAC, Y_TOP], [f1.n[0], Y_TOP]);
+  wire([xAC, Y_TOP], [f1.i[0], Y_TOP]);
   // f1 is at Y_TOP already, connect n→f1 left and f1 right → rt1
   wire([rt1.p[0], Y_TOP], [br1_box.pins['AC1'][0], Y_TOP]);
   wire(br1_box.pins['AC1'], [br1_box.pins['AC1'][0], Y_TOP]);
@@ -395,7 +395,7 @@ function _genIFC(uds, comps, result, meta, hitBoxes) {
   hitBoxes['F1'] = bbox(f1);
 
   // L1 EMI
-  const l1 = new Inductor({ orient:'h', n: shift(f1.p, 20, 0), name:'L1', value: cv(comps,'L1','value')||'4mH' });
+  const l1 = new Inductor({ orient:'h', n: shift(f1.o, 20, 0), name:'L1', value: cv(comps,'L1','value')||'4mH' });
   hitBoxes['L1'] = bbox(l1);
 
   // BR1
@@ -405,7 +405,7 @@ function _genIFC(uds, comps, result, meta, hitBoxes) {
   hitBoxes['BR1'] = { x: br1_box.x0, y: br1_box.y0, w: br1_box.bw, h: br1_box.bh };
 
   wire([60, Y_MID-80], [60, Y_TOP]);
-  wire([60, Y_TOP], [f1.n[0], Y_TOP]);
+  wire([60, Y_TOP], [f1.i[0], Y_TOP]);
   wire([l1.p[0], Y_TOP], [br1_box.pins['AC1'][0], Y_TOP]);
   wire(br1_box.pins['AC1'], [br1_box.pins['AC1'][0], Y_TOP]);
   wire([60, Y_MID+80], [60, Y_RTN]);
@@ -489,12 +489,12 @@ function _genLPFC(uds, comps, result, meta, hitBoxes, type) {
   const f1 = new Box({ orient:'h', C:[160, Y_TOP], name:'F1', value: cv(comps,'F1','value')||'0.5A', w:1, h:0.55, background:'#fffbf0', border:'#888' });
   hitBoxes['F1'] = bbox(f1);
 
-  const br1_box = drawIC(sch, f1.p[0]+100, Y_MID, 60, 170, 'BR1', cv(comps,'BR1','part')||'MB6S',
+  const br1_box = drawIC(sch, f1.o[0]+100, Y_MID, 60, 170, 'BR1', cv(comps,'BR1','part')||'MB6S',
     ['AC1','−'], ['AC2','+'], '#f5f8ff', '#888');
   hitBoxes['BR1'] = { x: br1_box.x0, y: br1_box.y0, w: br1_box.bw, h: br1_box.bh };
 
-  wire([60, Y_MID-80], [60, Y_TOP]); wire([60, Y_TOP], [f1.n[0], Y_TOP]);
-  wire([f1.p[0], Y_TOP], [br1_box.pins['AC1'][0], Y_TOP]);
+  wire([60, Y_MID-80], [60, Y_TOP]); wire([60, Y_TOP], [f1.i[0], Y_TOP]);
+  wire([f1.o[0], Y_TOP], [br1_box.pins['AC1'][0], Y_TOP]);
   wire(br1_box.pins['AC1'], [br1_box.pins['AC1'][0], Y_TOP]);
   wire([60, Y_MID+80], [60, Y_RTN]);
   wire([60, Y_RTN], [br1_box.pins['AC2'][0], Y_RTN]);
@@ -582,12 +582,12 @@ function _genPSC(uds, comps, result, meta, hitBoxes, type) {
   const f1 = new Box({ orient:'h', C:[155, Y_TOP], name:'F1', value: cv(comps,'F1','value')||'0.3A', w:1, h:0.55, background:'#fffbf0', border:'#888' });
   hitBoxes['F1'] = bbox(f1);
 
-  const br1_box = drawIC(sch, f1.p[0]+90, Y_MID, 60, 165, 'BR1', 'MB2S',
+  const br1_box = drawIC(sch, f1.o[0]+90, Y_MID, 60, 165, 'BR1', 'MB2S',
     ['AC1','−'], ['AC2','+'], '#f5f8ff', '#888');
   hitBoxes['BR1'] = { x: br1_box.x0, y: br1_box.y0, w: br1_box.bw, h: br1_box.bh };
 
-  wire([60, Y_MID-80], [60, Y_TOP]); wire([60, Y_TOP], [f1.n[0], Y_TOP]);
-  wire([f1.p[0], Y_TOP], [br1_box.pins['AC1'][0], Y_TOP]);
+  wire([60, Y_MID-80], [60, Y_TOP]); wire([60, Y_TOP], [f1.i[0], Y_TOP]);
+  wire([f1.o[0], Y_TOP], [br1_box.pins['AC1'][0], Y_TOP]);
   wire(br1_box.pins['AC1'], [br1_box.pins['AC1'][0], Y_TOP]);
   wire([60, Y_MID+80], [60, Y_RTN]);
   wire([60, Y_RTN], [br1_box.pins['AC2'][0], Y_RTN]);
