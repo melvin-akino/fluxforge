@@ -154,11 +154,11 @@
 
           <!-- ─── SPIRAL VIEW ────────────────────────────────────────────── -->
           <div v-if="mechView==='spiral'" class="spiral-wrap">
-            <svg :viewBox="'0 0 420 340'" class="spiral-svg"
+            <svg :viewBox="'0 0 420 430'" class="spiral-svg"
                  xmlns="http://www.w3.org/2000/svg">
 
               <!-- Background -->
-              <rect x="0" y="0" width="420" height="420" fill="#f9f9f9"/>
+              <rect x="0" y="0" width="420" height="430" fill="#f9f9f9"/>
 
               <!-- Title -->
               <text x="210" y="28" text-anchor="middle"
@@ -256,34 +256,21 @@
               <!-- Legend -->
               <!-- Legend moved outside SVG -->
 
-              <!-- Fill factor arc indicator (bottom right) -->
-              <text x="380" y="360" text-anchor="end"
-                font-size="8.5" fill="#555" font-family="monospace">
-                Fill: {{ result.fill_pct }}%
-              </text>
-              <text x="380" y="374" text-anchor="end"
-                font-size="8" fill="#888" font-family="monospace">
-                Ku = {{ result.Ku }}
-              </text>
-              <text x="380" y="388" text-anchor="end"
-                font-size="8" fill="#888" font-family="monospace">
-                Wa = {{ result.window_area_mm2 }} mm²
-              </text>
-              <text x="380" y="402" text-anchor="end"
-                font-size="8" fill="#888" font-family="monospace">
-                Gap: {{ result.gap_mm }} mm
-              </text>
-
-              <!-- Dimension lines -->
-              <!-- Outer core dimension arrow -->
-              <line :x1="210 - spiralData.core_half" y1="405"
-                    :x2="210 + spiralData.core_half" y2="405"
+              <!-- Dimension line: outer core width -->
+              <line :x1="210 - spiralData.core_half" y1="375"
+                    :x2="210 + spiralData.core_half" y2="375"
                     stroke="#8b6914" stroke-width="1"
                     marker-start="url(#arrow-left)" marker-end="url(#arrow-right)"/>
-              <text x="210" y="415" text-anchor="middle"
+              <text x="210" y="388" text-anchor="middle"
                 font-size="8" fill="#8b6914" font-family="monospace">
                 {{ result.core.name }} outer
               </text>
+
+              <!-- Stats (bottom-right, inside viewBox) -->
+              <text x="415" y="355" text-anchor="end" font-size="8.5" fill="#555" font-family="monospace">Fill: {{ result.fill_pct }}%</text>
+              <text x="415" y="368" text-anchor="end" font-size="8" fill="#888" font-family="monospace">Ku = {{ result.Ku }}</text>
+              <text x="415" y="381" text-anchor="end" font-size="8" fill="#888" font-family="monospace">Wa = {{ result.window_area_mm2 }} mm²</text>
+              <text x="415" y="394" text-anchor="end" font-size="8" fill="#888" font-family="monospace">Gap: {{ result.gap_mm }} mm</text>
 
               <!-- Arrow markers -->
               <defs>
@@ -321,7 +308,7 @@
             <svg viewBox="0 0 760 560" class="constr-svg" xmlns="http://www.w3.org/2000/svg">
 
               <!-- Background -->
-              <rect x="0" y="0" width="760" height="480" fill="#fdfdfd"/>
+              <rect x="0" y="0" width="760" height="560" fill="#fdfdfd"/>
 
               <!-- ── Title ─────────────────────────────────────────────────── -->
               <text x="380" y="28" text-anchor="middle"
@@ -581,10 +568,10 @@
                vendor.
                ═══════════════════════════════════════════════════════════ -->
           <div v-if="mechView==='designer'" class="dsgn-wrap">
-            <svg viewBox="0 0 820 600" class="dsgn-svg" xmlns="http://www.w3.org/2000/svg">
+            <svg viewBox="0 0 460 600" class="dsgn-svg" xmlns="http://www.w3.org/2000/svg">
 
               <!-- White background + border -->
-              <rect x="0" y="0" width="820" height="520" fill="#fff" stroke="#ccc" stroke-width="1"/>
+              <rect x="0" y="0" width="460" height="590" fill="#fff" stroke="#ccc" stroke-width="1"/>
 
               <!-- Title block (bottom-right, engineering drawing style) -->
               <rect x="10" y="510" width="420" height="80" fill="#f5f5f5" stroke="#888" stroke-width="1"/>
@@ -682,41 +669,6 @@
                 </text>
               </g>
 
-              <!-- Spec table (right of diagram) -->
-              <g transform="translate(445, 30)">
-                <rect x="0" y="0" width="365" height="380" fill="#f9f9fa" stroke="#ccc" stroke-width="1" rx="3"/>
-                <text x="182" y="18" text-anchor="middle" font-size="10" fill="#1a1a2e" font-family="sans-serif" font-weight="700">WINDING SPECIFICATION</text>
-                <line x1="0" y1="24" x2="365" y2="24" stroke="#ccc" stroke-width="1"/>
-
-                <!-- Column headers -->
-                <text x="6"   y="38" font-size="7.5" fill="#555" font-family="monospace" font-weight="700">WINDING</text>
-                <text x="82"  y="38" font-size="7.5" fill="#555" font-family="monospace" font-weight="700">TURNS</text>
-                <text x="116" y="38" font-size="7.5" fill="#555" font-family="monospace" font-weight="700">AWG</text>
-                <text x="148" y="38" font-size="7.5" fill="#555" font-family="monospace" font-weight="700">×STR</text>
-                <text x="178" y="38" font-size="7.5" fill="#555" font-family="monospace" font-weight="700">IRMS(A)</text>
-                <text x="228" y="38" font-size="7.5" fill="#555" font-family="monospace" font-weight="700">DCR(mΩ)</text>
-                <line x1="0" y1="44" x2="270" y2="44" stroke="#ccc" stroke-width="0.8"/>
-
-                <g v-for="(w, wi) in result.windings" :key="'ws-'+wi">
-                  <rect x="0" :y="48 + wi*24" width="270" height="24"
-                    :fill="wi%2===0 ? '#fff' : '#f4f6fc'" stroke="none"/>
-                  <rect x="0" :y="48 + wi*24" width="4" height="24" :fill="w.color"/>
-                  <text x="10"  :y="64 + wi*24" font-size="8" fill="#1a1a2e" font-family="sans-serif">{{ w.name }}</text>
-                  <text x="82"  :y="64 + wi*24" font-size="8.5" fill="#1a1a2e" font-family="monospace" font-weight="700">{{ w.turns }}</text>
-                  <text x="116" :y="64 + wi*24" font-size="8" fill="#1a1a2e" font-family="monospace">{{ w.awg }}</text>
-                  <text x="148" :y="64 + wi*24" font-size="8" fill="#1a1a2e" font-family="monospace">{{ w.strands }}</text>
-                  <text x="178" :y="64 + wi*24" font-size="8" fill="#1a1a2e" font-family="monospace">{{ w.Irms }}</text>
-                  <text x="228" :y="64 + wi*24" font-size="8" fill="#1a1a2e" font-family="monospace">{{ w.DCR_mohm }}</text>
-                </g>
-
-                <line x1="0" :y1="52 + result.windings.length*24" x2="270" :y2="52 + result.windings.length*24" stroke="#ccc" stroke-width="1"/>
-
-                <!-- Core parameters -->
-                <g v-for="(row, ri) in dvData.coreParams" :key="'cp-'+ri">
-                  <text x="6"   :y="66 + result.windings.length*24 + ri*16" font-size="8" fill="#555" font-family="monospace">{{ row.label }}</text>
-                  <text x="160" :y="66 + result.windings.length*24 + ri*16" font-size="8" fill="#1a1a2e" font-family="monospace" font-weight="600">{{ row.value }}</text>
-                </g>
-              </g>
 
               <!-- Dimension line: total window height (left of diagram) -->
               <line x1="42" y1="30" x2="42" y2="380" stroke="#555" stroke-width="1"
@@ -746,38 +698,32 @@
                Format matches what is sent to a magnetics manufacturer.
                ═══════════════════════════════════════════════════════════ -->
           <div v-if="mechView==='foundry'" class="foundry-wrap">
-            <svg viewBox="0 0 1060 580" class="foundry-svg" xmlns="http://www.w3.org/2000/svg">
+            <svg viewBox="0 0 310 580" class="foundry-svg" xmlns="http://www.w3.org/2000/svg">
 
-              <!-- Drawing border (title block style) -->
-              <rect x="2" y="2" width="816" height="576" fill="#fff" stroke="#222" stroke-width="2"/>
-              <rect x="8" y="8" width="804" height="564" fill="#fff" stroke="#555" stroke-width="0.8"/>
+              <!-- Drawing border -->
+              <rect x="2" y="2" width="306" height="576" fill="#fff" stroke="#222" stroke-width="2"/>
+              <rect x="8" y="8" width="294" height="564" fill="#fff" stroke="#555" stroke-width="0.8"/>
 
-              <!-- Title block -->
-              <rect x="290" y="462" width="760" height="114" fill="#f0f0f0" stroke="#333" stroke-width="1.5"/>
-              <line x1="290" y1="492" x2="1050" y2="492" stroke="#333" stroke-width="1"/>
-              <line x1="290" y1="518" x2="1050" y2="518" stroke="#333" stroke-width="1"/>
-              <line x1="290" y1="544" x2="1050" y2="544" stroke="#333" stroke-width="1"/>
-              <line x1="670" y1="462" x2="670" y2="576" stroke="#333" stroke-width="1"/>
-              <text x="298" y="482" font-size="7.5" fill="#333" font-family="monospace">TITLE</text>
-              <text x="678" y="482" font-size="7.5" fill="#333" font-family="monospace">PART NUMBER</text>
-              <text x="298" y="510" font-size="9.5" fill="#1a1a2e" font-family="sans-serif" font-weight="700">
-                Flyback Transformer
-              </text>
-              <text x="678" y="510" font-size="9" fill="#1a1a2e" font-family="monospace">
-                {{ result.core.material }}{{ result.core.name }}-{{ result.Al_eff_nH }}
-              </text>
-              <text x="298" y="530" font-size="7.5" fill="#333" font-family="monospace">MATERIAL</text>
-              <text x="678" y="530" font-size="7.5" fill="#333" font-family="monospace">STANDARD</text>
-              <text x="298" y="548" font-size="8.5" fill="#1a1a2e" font-family="monospace">{{ form.coreMaterial }} ferrite</text>
-              <text x="678" y="548" font-size="8.5" fill="#1a1a2e" font-family="monospace">IEC 62368-1</text>
-              <text x="298" y="566" font-size="7.5" fill="#555" font-family="monospace">
-                FluxForge v1.0  ·  {{ new Date().toLocaleDateString() }}
-              </text>
+              <!-- Title block (bottom, fits within 310px width) -->
+              <rect x="8" y="462" width="294" height="114" fill="#f0f0f0" stroke="#333" stroke-width="1.5"/>
+              <line x1="8"   y1="492" x2="302" y2="492" stroke="#333" stroke-width="1"/>
+              <line x1="8"   y1="518" x2="302" y2="518" stroke="#333" stroke-width="1"/>
+              <line x1="8"   y1="544" x2="302" y2="544" stroke="#333" stroke-width="1"/>
+              <line x1="155" y1="462" x2="155" y2="576" stroke="#333" stroke-width="1"/>
+              <text x="14"  y="482" font-size="7.5" fill="#333" font-family="monospace">TITLE</text>
+              <text x="161" y="482" font-size="7.5" fill="#333" font-family="monospace">PART NUMBER</text>
+              <text x="14"  y="510" font-size="8.5" fill="#1a1a2e" font-family="sans-serif" font-weight="700">Flyback Transformer</text>
+              <text x="161" y="510" font-size="8" fill="#1a1a2e" font-family="monospace">{{ result.core.material }}{{ result.core.name }}</text>
+              <text x="14"  y="530" font-size="7.5" fill="#333" font-family="monospace">MATERIAL</text>
+              <text x="161" y="530" font-size="7.5" fill="#333" font-family="monospace">STANDARD</text>
+              <text x="14"  y="548" font-size="8" fill="#1a1a2e" font-family="monospace">{{ form.coreMaterial }} ferrite</text>
+              <text x="161" y="548" font-size="8" fill="#1a1a2e" font-family="monospace">IEC 62368-1</text>
+              <text x="14"  y="566" font-size="7" fill="#555" font-family="monospace">FluxForge · {{ new Date().toLocaleDateString() }}</text>
 
-              <!-- GENERAL NOTES section -->
-              <text x="14" y="480" font-size="9" fill="#1a1a2e" font-family="sans-serif" font-weight="700">GENERAL NOTES</text>
-              <g v-for="(note, ni) in fdData.notes" :key="'fn-'+ni">
-                <text :x="14" :y="496 + ni*16" font-size="8" fill="#333" font-family="monospace">
+              <!-- GENERAL NOTES -->
+              <text x="14" y="426" font-size="8.5" fill="#1a1a2e" font-family="sans-serif" font-weight="700">GENERAL NOTES</text>
+              <g v-for="(note, ni) in fdData.notes.slice(0,3)" :key="'fn-'+ni">
+                <text :x="14" :y="440 + ni*14" font-size="7" fill="#333" font-family="monospace">
                   {{ ni+1 }}. {{ note }}
                 </text>
               </g>
@@ -894,25 +840,6 @@
 
               </g><!-- end core drawing group -->
 
-              <!-- Materials & Spec table (right) -->
-              <g transform="translate(290, 14)">
-                <rect x="0" y="0" width="760" height="440" fill="#fafafa" stroke="#ccc" stroke-width="1" rx="2"/>
-                <text x="380" y="18" text-anchor="middle" font-size="10" fill="#1a1a2e" font-family="sans-serif" font-weight="700">WINDING &amp; MATERIALS SPECIFICATION</text>
-                <line x1="0" y1="24" x2="760" y2="24" stroke="#ccc" stroke-width="1"/>
-
-                <!-- Spec rows -->
-                <g v-for="(row, ri) in fdData.specRows" :key="'fsr-'+ri">
-                  <rect x="0" :y="28 + ri*22" width="760" height="22"
-                    :fill="ri%2===0 ? '#fff' : '#f4f6fc'" stroke="none"/>
-                  <rect v-if="row.color" x="0" :y="28 + ri*22" width="4" height="22"
-                    :fill="row.color"/>
-                  <text x="8"   :y="43 + ri*22" font-size="8" fill="#555" font-family="monospace">{{ row.ref }}</text>
-                  <text x="50"  :y="43 + ri*22" font-size="8.5" fill="#1a1a2e" font-family="sans-serif" font-weight="600">{{ row.item }}</text>
-                  <text x="200" :y="43 + ri*22" font-size="8" fill="#1a1a2e" font-family="monospace">{{ row.spec }}</text>
-                  <text x="470" :y="43 + ri*22" font-size="7.5" fill="#555" font-family="monospace">{{ row.tol }}</text>
-                  <text x="600" :y="43 + ri*22" font-size="7.5" fill="#555" font-family="monospace">{{ row.std }}</text>
-                </g>
-              </g>
 
             </svg>
           </div><!-- end foundry-wrap -->
@@ -1023,7 +950,7 @@
           <div v-if="mechView==='thermal'" class="therm-wrap">
             <svg viewBox="0 0 1020 480" class="therm-svg" xmlns="http://www.w3.org/2000/svg">
 
-              <rect x="0" y="0" width="760" height="480" fill="#F4F6F9"/>
+              <rect x="0" y="0" width="1020" height="480" fill="#F4F6F9"/>
               <text x="380" y="28" text-anchor="middle"
                 font-size="12" fill="#1A1A1A" font-family="sans-serif" font-weight="700">
                 Thermal Map — {{ result.core.name }} (Ta={{ form.Ta }}°C)
@@ -1635,6 +1562,68 @@
                 font-family="monospace">{{ lbl.line3 }}</text>
             </g>
           </svg>
+        </div>
+      </div>
+
+      <!-- Panel: Winding Specification (shown when Designer or Foundry tab active) -->
+      <div v-if="mechView === 'designer'" class="md-panel p-windspec">
+        <div class="md-panel-title md-title-cyan">
+          <span>Winding Specification</span>
+        </div>
+        <div class="md-panel-body windspec-body">
+          <table class="cfp-table windspec-table">
+            <thead>
+              <tr>
+                <th>Winding</th><th>Turns</th><th>AWG</th>
+                <th>×Str</th><th>Irms (A)</th><th>DCR (mΩ)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(w, wi) in result.windings" :key="'wst-'+wi">
+                <td>
+                  <span class="wp-dot" :style="{background: w.color}"></span>
+                  {{ w.name }}
+                </td>
+                <td>{{ w.turns }}</td>
+                <td>{{ w.awg }}</td>
+                <td>{{ w.strands }}</td>
+                <td>{{ w.Irms }}</td>
+                <td>{{ w.DCR_mohm }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="windspec-core">
+            <div v-for="row in dvData.coreParams" :key="row.label" class="windspec-row">
+              <span class="windspec-lbl">{{ row.label }}</span>
+              <span class="windspec-val">{{ row.value }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Winding & Materials Spec (shown when Foundry tab active) -->
+      <div v-if="mechView === 'foundry'" class="md-panel p-windspec">
+        <div class="md-panel-title md-title-cyan">
+          <span>Winding &amp; Materials Specification</span>
+        </div>
+        <div class="md-panel-body windspec-body">
+          <table class="cfp-table windspec-table">
+            <thead>
+              <tr>
+                <th>Ref</th><th>Item</th><th>Specification</th><th>Tolerance</th><th>Standard</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(row, ri) in fdData.specRows" :key="'fsr-'+ri"
+                  :style="row.color ? {'border-left': '3px solid ' + row.color} : {}">
+                <td class="windspec-ref">{{ row.ref }}</td>
+                <td><strong>{{ row.item }}</strong></td>
+                <td class="ff-mono">{{ row.spec }}</td>
+                <td class="ff-mono">{{ row.tol }}</td>
+                <td class="ff-mono">{{ row.std }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -3152,6 +3141,16 @@ select.md-inp { width: 80px; }
 .md-row-bot { flex: 1.5; }
 .p-elec     { flex: 1; }
 .p-coilprop { flex: 1; }
+.p-windspec { flex: 1.4; }
+
+.windspec-body { padding: .5rem; overflow-y: auto; display: flex; flex-direction: column; gap: .5rem; }
+.windspec-table { width: 100%; }
+.windspec-core { display: flex; flex-direction: column; gap: .2rem; padding-top: .4rem; border-top: 1px solid #e2e8f0; }
+.windspec-row { display: flex; justify-content: space-between; font-size: .78rem; padding: .15rem .25rem; }
+.windspec-lbl { color: #64748b; font-family: monospace; }
+.windspec-val { font-weight: 600; color: #1a1a2e; font-family: monospace; }
+.windspec-ref { font-family: monospace; font-size: .8rem; }
+.ff-mono { font-family: monospace; font-size: .78rem; }
 .p-instr    { flex: 1; }
 
 /* ── Panel title bars ────────────────────────────────────────────────────── */
