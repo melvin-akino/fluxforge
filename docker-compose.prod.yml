@@ -1,10 +1,10 @@
-version: "3.9"
-
 # Production overrides — use with:
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 services:
   server:
+    image: ${SERVER_IMAGE}
+    build: !reset null
     restart: always
     environment:
       NODE_ENV: production
@@ -15,10 +15,11 @@ services:
       start_period: 10s
 
   web:
+    image: ${WEB_IMAGE}
+    build: !reset null
     restart: always
     ports:
       - "80:80"
-      - "443:443"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost/index.html"]
       interval: 30s
