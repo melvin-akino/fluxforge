@@ -3,17 +3,18 @@
 # setup-and-deploy.sh — FluxForge one-shot AWS setup + deploy
 #
 # Runs everything end-to-end from a single command:
-#   1. Creates ECR repos if they don't exist
-#   2. Builds Docker images locally
-#   3. Pushes images to ECR
-#   4. SSHs into EC2 and sets up the instance (once — skips if already done):
+#   1. Creates EC2 key pair + saves .pem file (skips if already exists)
+#   2. Creates ECR repos if they don't exist
+#   3. Builds Docker images locally
+#   4. Pushes images to ECR
+#   5. SSHs into EC2 and sets up the instance (once — skips if already done):
 #        • 2 GB swap file (critical for t3.micro 1 GB RAM)
 #        • Docker + Docker Compose plugin
 #        • AWS CLI v2
-#   5. Uploads docker-compose files + nginx config
-#   6. Writes .env on the server if missing
-#   7. Pulls images and starts the stack
-#   8. Health-checks the live endpoint
+#   6. Uploads docker-compose files + nginx config
+#   7. Writes .env on the server if missing
+#   8. Pulls images and starts the stack
+#   9. Health-checks the live endpoint
 #
 # Prerequisites on your LOCAL machine:
 #   - AWS CLI v2 configured  (aws configure)
@@ -40,16 +41,11 @@ fi
 # shellcheck disable=SC1090
 source "$AWS_ENV"
 
-for var in AWS_ACCOUNT_ID AWS_REGION ECR_REPO_WEB ECR_REPO_SERVER EC2_HOST EC2_USER EC2_KEY_PATH; do
+for var in AWS_ACCOUNT_ID AWS_REGION ECR_REPO_WEB ECR_REPO_SERVER EC2_HOST EC2_USER EC2_KEY_PATH EC2_KEY_NAME; do
   if [[ -z "${!var:-}" ]]; then
     echo "❌  $var is not set in .env.aws"; exit 1
   fi
 done
-
-if [[ ! -f "$EC2_KEY_PATH" ]]; then
-  echo "❌  EC2 key not found: $EC2_KEY_PATH"; exit 1
-fi
-chmod 600 "$EC2_KEY_PATH"
 
 REMOTE_DIR="${REMOTE_APP_DIR:-/home/${EC2_USER}/fluxforge}"
 APP_ENV="$ROOT_DIR/.env"
@@ -85,9 +81,43 @@ if [[ -z "${JWT_SECRET:-}" ]]; then
 fi
 
 # =============================================================================
-# STEP 1 — ECR repositories
+# STEP 1 — EC2 Key Pair + PEM file
 # =============================================================================
-echo "━━━  [1/7] ECR Repositories"
+echo "━━━  [1/9] EC2 Key Pair"
+KEY_DIR="$(dirname "$EC2_KEY_PATH")"
+mkdir -p "$KEY_DIR"
+
+if [[ -f "$EC2_KEY_PATH" ]]; then
+  echo "  ✔  PEM already exists at $EC2_KEY_PATH — skipping"
+else
+  # Check if the key pair already exists in AWS (e.g. from a previous run that
+  # saved the file elsewhere). If so, delete and recreate so we get the material.
+  if aws ec2 describe-key-pairs \
+       --key-names "$EC2_KEY_NAME" \
+       --region "$AWS_REGION" &>/dev/null; then
+    echo "  ⚠  Key pair '$EC2_KEY_NAME' exists in AWS but PEM is missing locally."
+    echo "     Deleting and recreating so we can save the private key..."
+    aws ec2 delete-key-pair \
+      --key-name "$EC2_KEY_NAME" \
+      --region "$AWS_REGION"
+  fi
+
+  echo "  +  Creating key pair '$EC2_KEY_NAME' in AWS ($AWS_REGION)..."
+  aws ec2 create-key-pair \
+    --key-name "$EC2_KEY_NAME" \
+    --region "$AWS_REGION" \
+    --query 'KeyMaterial' \
+    --output text > "$EC2_KEY_PATH"
+  chmod 600 "$EC2_KEY_PATH"
+  echo "  ✔  PEM saved to $EC2_KEY_PATH"
+  echo "  ⚠  Keep this file safe — AWS will NOT give you the private key again."
+fi
+chmod 600 "$EC2_KEY_PATH"
+
+# =============================================================================
+# STEP 2 — ECR repositories
+# =============================================================================
+echo "━━━  [2/9] ECR Repositories"
 for REPO in "$ECR_REPO_WEB" "$ECR_REPO_SERVER"; do
   if aws ecr describe-repositories \
        --repository-names "$REPO" \
@@ -105,19 +135,19 @@ for REPO in "$ECR_REPO_WEB" "$ECR_REPO_SERVER"; do
 done
 
 # =============================================================================
-# STEP 2 — ECR login (local Docker)
+# STEP 3 — ECR login (local Docker)
 # =============================================================================
 echo
-echo "━━━  [2/7] ECR Login"
+echo "━━━  [3/9] ECR Login"
 aws ecr get-login-password --region "$AWS_REGION" \
   | docker login --username AWS --password-stdin "$ECR_REGISTRY"
 echo "  ✔  Docker authenticated to ECR"
 
 # =============================================================================
-# STEP 3 — Build images
+# STEP 4 — Build images
 # =============================================================================
 echo
-echo "━━━  [3/7] Docker Build"
+echo "━━━  [4/9] Docker Build"
 echo "  Building web..."
 docker build -f "$ROOT_DIR/Dockerfile.web" \
   -t "${IMG_WEB}:${TAG}" \
@@ -132,10 +162,10 @@ docker build -f "$ROOT_DIR/Dockerfile.server" \
 echo "  ✔  Images built (tag: $TAG)"
 
 # =============================================================================
-# STEP 4 — Push to ECR
+# STEP 5 — Push to ECR
 # =============================================================================
 echo
-echo "━━━  [4/7] Push to ECR"
+echo "━━━  [5/9] Push to ECR"
 docker push "${IMG_WEB}:${TAG}"
 docker push "${IMG_WEB}:latest"
 docker push "${IMG_SRV}:${TAG}"
@@ -143,10 +173,10 @@ docker push "${IMG_SRV}:latest"
 echo "  ✔  Images pushed"
 
 # =============================================================================
-# STEP 5 — Upload compose + config files to EC2
+# STEP 6 — Upload compose + config files to EC2
 # =============================================================================
 echo
-echo "━━━  [5/7] Sync Files to EC2"
+echo "━━━  [6/9] Sync Files to EC2"
 ssh -i "$EC2_KEY_PATH" -o StrictHostKeyChecking=no -o ConnectTimeout=20 \
   "${EC2_USER}@${EC2_HOST}" "mkdir -p ${REMOTE_DIR}/nginx"
 
@@ -163,11 +193,11 @@ fi
 echo "  ✔  Files synced"
 
 # =============================================================================
-# STEP 6 — Bootstrap EC2 (idempotent — skips anything already done)
+# STEP 7 — Bootstrap EC2 (idempotent — skips anything already done)
 #          + write .env + pull images + start stack
 # =============================================================================
 echo
-echo "━━━  [6/7] Bootstrap + Deploy on EC2"
+echo "━━━  [7/9] Bootstrap + Deploy on EC2"
 echo "  Connecting to ${EC2_HOST}..."
 
 ssh -i "$EC2_KEY_PATH" \
@@ -299,10 +329,10 @@ sudo docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
 REMOTE
 
 # =============================================================================
-# STEP 7 — Health check
+# STEP 8 — Health check
 # =============================================================================
 echo
-echo "━━━  [7/7] Health Check"
+echo "━━━  [8/9] Health Check"
 echo "  Waiting for ${APP_URL}/api/health ..."
 for i in {1..18}; do
   HTTP="$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 \
