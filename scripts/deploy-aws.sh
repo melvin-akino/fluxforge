@@ -17,11 +17,11 @@
 #   - docker
 #   - ssh + your EC2 key pair
 #
-# First-time setup:
-#   cp .env.aws.example .env.aws
-#   # fill in all values, then:
+# First-time setup (run bootstrap ONCE before first deploy):
+#   cp .env.aws.example .env.aws   ← fill in your values
 #   chmod 600 .env.aws
-#   ./scripts/deploy-aws.sh
+#   ./scripts/bootstrap-ec2.sh    ← installs Docker + 2GB swap on the EC2 instance
+#   ./scripts/deploy-aws.sh       ← then deploy
 #
 # Usage:
 #   ./scripts/deploy-aws.sh            # deploy with tag = git short SHA
@@ -181,11 +181,11 @@ AWS_REGION="${AWS_REGION}"
 
 echo "  → Logging into ECR on EC2..."
 aws ecr get-login-password --region "\$AWS_REGION" \\
-  | docker login --username AWS --password-stdin "\$ECR_REGISTRY"
+  | sudo docker login --username AWS --password-stdin "\$ECR_REGISTRY"
 
 echo "  → Pulling new images..."
-docker pull "\$IMG_WEB"
-docker pull "\$IMG_SRV"
+sudo docker pull "\$IMG_WEB"
+sudo docker pull "\$IMG_SRV"
 
 echo "  → Writing image tags into override file..."
 cat > "\$REMOTE_DIR/.env.images" <<EOF
@@ -193,16 +193,16 @@ WEB_IMAGE=\$IMG_WEB
 SERVER_IMAGE=\$IMG_SRV
 EOF
 
-echo "  → Restarting stack..."
+echo "  → Restarting stack (swap available for t3.micro)..."
 cd "\$REMOTE_DIR"
-docker compose -f docker-compose.yml -f docker-compose.prod.yml \\
+sudo docker compose -f docker-compose.yml -f docker-compose.prod.yml \\
   --env-file .env --env-file .env.images up -d --remove-orphans
 
-echo "  → Pruning old images..."
-docker image prune -f --filter "until=24h"
+echo "  → Pruning old images (free up disk on t3.micro)..."
+sudo docker image prune -f --filter "until=24h"
 
 echo "  → Stack status:"
-docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
+sudo docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
 REMOTE
 
 # ── 7. Health check ───────────────────────────────────────────────────────────
