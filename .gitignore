@@ -16,6 +16,7 @@ PITauri/src-tauri/gen/
 .env
 .env.local
 .env.*.local
+.env.aws
 
 # Editor
 .vscode/
