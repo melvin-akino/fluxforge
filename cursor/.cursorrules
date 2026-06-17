@@ -1,0 +1,68 @@
+# FluxForge — Cursor AI Rules
+# Place this file at the project root. Cursor loads it automatically every session.
+
+## Project Identity
+- App name: FluxForge
+- Stack: Vue 3 + Pinia + Vue Router + Vite (frontend), Express + sql.js SQLite (backend), Tauri v2 (desktop)
+- Monorepo: pnpm workspaces — packages/shared, PIWeb, PITauri, server
+- Shared package: @fluxforge/shared
+- Brand color: Teal #0D7377, CSS prefix: --ff-*
+
+## Engineering Rules (always enforced)
+
+- Never regenerate entire files — targeted edits and diffs only
+- One subsystem at a time — complete and validate before moving on
+- Stop after each phase — wait for explicit approval before continuing
+- No placeholders, no mocks — production-grade patterns only
+- No unnecessary abstractions — three similar lines is better than a premature abstraction
+- No comments on the obvious — only add a comment when the WHY is non-obvious
+- No half-finished implementations
+
+## Pre-Flight Checklist (run before every code change)
+1. Architecture consistency — does this violate key patterns?
+2. Dependency graph impact — does changing this file break importers?
+3. Async flow correctness — are all promises awaited?
+4. Test coverage affected — which test files need updating?
+
+## Output Format for Every Task
+1. Objective
+2. Scope boundaries
+3. Files affected
+4. Implementation plan
+5. Code changes (diffs only)
+6. Validation checklist
+7. Risks
+8. Next recommended step
+
+## Architecture Rules (never violate)
+
+### Platform Abstraction — shared components must never import adapters directly
+CORRECT:   import { api } from '../api/index.js'; api.getFiles();
+WRONG:     import { httpApi } from '../api/http.js';
+
+### wizardActive — only mechanism for hiding router-view when design is active
+CORRECT:   computed(() => designStore.wizardActive)
+WRONG:     computed(() => designWizardRef.value?.isActive?.value)
+
+### Single <style scoped> per SFC — after any .vue edit, verify count = 1
+CHECK:     grep -c '<style' packages/shared/src/components/SchematicDiagram.vue
+
+### UDS mutations — always deep-clone before writing
+CORRECT:   const newUds = JSON.parse(JSON.stringify(uds)); newUds.components[ref] = {...}; emit('update:uds', newUds);
+
+## Docker Rules
+- Never install pnpm via corepack inside Docker — use: npm install -g pnpm@x.x.x
+- Always set strict-ssl false before npm installs in Docker: npm config set strict-ssl false
+- Web image must never contain Node.js at runtime — only nginx:alpine
+- Production compose always uses image: from ECR, never build:
+
+## Windows SSH Rules
+- All SSH/SCP calls in bash scripts must use Windows OpenSSH: C:/Windows/System32/OpenSSH/ssh.exe
+- Convert Unix paths to Windows paths before passing to Windows OpenSSH
+- Prefix aws CLI calls containing /dev/ paths with MSYS_NO_PATHCONV=1
+- Prefix SSH heredoc calls passing Unix paths as env vars with MSYS_NO_PATHCONV=1
+
+## Security Rules
+- Never commit .env, .env.aws, or *.pem files
+- JWT secret minimum 32 characters
+- SQLite DB lives on a named Docker volume — never in the image layer
