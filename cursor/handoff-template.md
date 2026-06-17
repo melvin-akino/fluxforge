@@ -8,8 +8,10 @@ Fill in the bracketed sections before sending.
 ## Project Context
 
 **Project:** FluxForge — flyback transformer design tool  
-**Stack:** Vue 3 + Pinia + Vite (frontend) · Express + sql.js SQLite (backend) · Tauri v2 (desktop) · Docker · AWS EC2  
+**Stack:** Vue 3 + Pinia + Vite (frontend) · Express + sql.js SQLite (backend) · Tauri v2 (desktop)  
 **Monorepo:** pnpm workspaces — `packages/shared`, `PIWeb`, `PITauri`, `server`  
+**Deployment:** Single machine — nginx + PM2/systemd  
+**Repository:** Bitbucket  
 **Rules:** See @cursor/engineering-rules.md  
 **Architecture:** See @cursor/architecture.md  
 
@@ -20,8 +22,8 @@ Fill in the bracketed sections before sending.
 | Phase | Status |
 |-------|--------|
 | Phase 1 — Rebrand | ✅ Complete |
-| Phase 2 — Docker + AWS | ✅ Complete |
-| Phase 3 — GitHub Actions CI | 🔴 Not started |
+| Phase 2 — Single-machine deploy | ✅ Complete |
+| Phase 3 — Bitbucket Pipelines CI | 🔴 Not started |
 
 ---
 
@@ -35,7 +37,7 @@ Fill in the bracketed sections before sending.
 - [file path] — [brief description of change]
 
 **Committed:** [yes/no — commit hash if yes]  
-**Deployed:** [yes/no — URL if yes]
+**Deployed:** [yes/no]
 
 ---
 

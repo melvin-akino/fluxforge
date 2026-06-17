@@ -33,14 +33,8 @@ fluxforge/                          ← pnpm workspace root
 ├── server/                         ← Express REST API
 │   └── index.js                   ← sql.js SQLite, multer, JWT (custom HMAC-SHA256)
 ├── tests/                          ← Node.js built-in test runner
-├── nginx/
-│   └── default.conf               ← SPA fallback + /api proxy to server:8081
-├── Dockerfile.web                  ← node:22-alpine (build) → nginx:alpine (serve)
-├── Dockerfile.server               ← node:22-alpine
-├── docker-compose.yml              ← Dev: ports 5200:80, 8099:8081
-├── docker-compose.prod.yml         ← Prod: ECR images, restart:always, healthchecks
-└── scripts/
-    └── setup-and-deploy.sh        ← One-shot AWS deploy (10 steps)
+└── nginx/
+    └── default.conf               ← SPA fallback + /api proxy to server:8081
 ```
 
 ---
@@ -67,14 +61,13 @@ fluxforge/                          ← pnpm workspace root
 | File upload | multer (50 MB limit) |
 | Package manager | pnpm 10.33 (workspaces) |
 
-### Infrastructure
+### Infrastructure (single machine)
 | Layer | Technology |
 |-------|-----------|
-| Container registry | AWS ECR |
-| Compute | AWS EC2 t3.micro (1 GB RAM + 2 GB swap) |
-| Web server | nginx:alpine |
-| CI deploy | `scripts/setup-and-deploy.sh` (bash, Windows OpenSSH) |
-| OS | Amazon Linux 2023 |
+| Web server | nginx (reverse proxy + SPA serving) |
+| Process manager | PM2 or systemd |
+| Database | SQLite file on server filesystem |
+| Repository | Bitbucket |
 
 ---
 
@@ -129,23 +122,19 @@ Portable JSON format for all design files:
 }
 ```
 
-### 4. Docker Architecture
+### 4. Single-Machine Deployment
 
 ```
 Browser
   │  :80
   ▼
-nginx:alpine (web container)
-  ├── serves /dist (Vite SPA build)
-  └── proxies /api/* → server:8081
+nginx (reverse proxy)
+  ├── serves PIWeb/dist/ (Vite SPA build)
+  └── proxies /api/* → localhost:8081
                           │
-                    Express container
-                          └── /data volume (SQLite + uploads)
+                    Express (PM2/systemd)
+                          └── /data/fluxforge.db (SQLite + uploads)
 ```
-
-- Web image: `node:22-alpine` builder → `nginx:alpine` runtime (~15 MB)
-- Server image: `node:22-alpine` (~80 MB)
-- Named volume `fluxforge-data` persists SQLite DB and uploads across deploys
 
 ### 5. IC Family Config
 
@@ -160,13 +149,11 @@ nginx:alpine (web container)
 
 ## Ports Reference
 
-| Port | Binding | Purpose |
-|------|---------|---------|
-| `80` | EC2 public → nginx | All web traffic |
-| `8081` | nginx → Express (internal) | API proxy |
-| `8099` | EC2 host → Express | Direct API (dev/debug) |
-| `5174` | localhost | Vite dev server |
-| `22` | EC2 | SSH |
+| Port | Purpose |
+|------|---------|
+| `80` | nginx — all web traffic |
+| `8081` | Express API (internal, proxied via nginx) |
+| `5174` | Vite dev server (local dev only) |
 
 ---
 

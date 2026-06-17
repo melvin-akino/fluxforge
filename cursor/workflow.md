@@ -1,6 +1,6 @@
 # FluxForge — Step-by-Step Build & Deploy Workflow
 
-The exact sequence used to build, deploy, and iterate on FluxForge — from initial scaffold to live AWS EC2 deployment.
+The exact sequence used to build, deploy, and iterate on FluxForge — from initial scaffold to live single-machine deployment.
 
 ---
 
@@ -95,117 +95,66 @@ Validation:
 
 ---
 
-## Phase 3 — Docker Containerisation
+## Phase 3 — Single-Machine Deployment
 
 ```
-14. Write Dockerfiles
-    Dockerfile.web:
-      Stage 1: node:22-alpine — pnpm install + vite build
-      Stage 2: nginx:alpine   — copy dist/, add nginx config
+14. Build Vite web bundle
+    pnpm build:web
+    → PIWeb/dist/ (static files for nginx)
 
-    Dockerfile.server:
-      node:22-alpine — pnpm install (server only) + node index.js
-
-    CRITICAL (Windows / corporate proxy):
-      RUN npm config set strict-ssl false && npm install -g pnpm@10.33.0
-      Do NOT use corepack — it fails when SSL is intercepted by Docker Desktop
-
-15. Write docker-compose.yml (dev)
-    server: build from Dockerfile.server, port 8099:8081
-    web: build from Dockerfile.web, port 5200:80, depends_on server healthy
-    volume: fluxforge-data → /data
-
-16. Write docker-compose.prod.yml (production overrides)
-    server: image: ${SERVER_IMAGE}, build: !reset null, restart: always
-    web:    image: ${WEB_IMAGE},    build: !reset null, restart: always, port 80:80
-
-    CRITICAL: docker-compose.prod.yml must use image: overrides.
-    Without "build: !reset null" Docker Compose will try to build locally
-    instead of using the pre-pulled ECR image.
-
-17. Write nginx/default.conf
+15. Write nginx/default.conf
     / → try_files (SPA fallback)
-    /api/ → proxy_pass http://server:8081
+    /api/ → proxy_pass http://localhost:8081
     static assets: 1y cache immutable
     index.html: no-store
 
-18. Build and test locally
-    docker compose up --build
-    curl http://localhost:5200
-    curl http://localhost:8099/api/health
+16. Set up server environment
+    Create /etc/fluxforge/.env with:
+      PORT=8081
+      DB_PATH=/data/fluxforge/fluxforge.db
+      UPLOAD_DIR=/data/fluxforge/uploads
+      JWT_SECRET=<32+ char secret>
+      NODE_ENV=production
+
+17. Start Express with PM2
+    npm install -g pm2
+    pm2 start server/index.js --name fluxforge-server
+    pm2 save && pm2 startup
+
+18. Configure nginx
+    ln -s nginx/default.conf /etc/nginx/sites-enabled/fluxforge
+    nginx -t && systemctl reload nginx
+
+19. Copy dist to web root
+    rsync -av PIWeb/dist/ /var/www/fluxforge/
+
+Validation:
+    curl http://localhost/api/health   # Expected: HTTP 200
+    curl http://localhost/             # Expected: index.html
 ```
 
 ---
 
-## Phase 4 — AWS Deployment
+## Phase 4 — Iteration & Redeployment
 
 ```
-19. IAM setup (AWS Console — one time)
-    Create IAM user with programmatic access
-    Attach inline policies covering:
-      - ECR: full push/pull on fluxforge-* repos
-      - EC2: RunInstances, key pair CRUD, security groups
-      - IAM: CreateRole, CreateInstanceProfile, PassRole
+20. Make code changes locally
 
-20. Configure AWS CLI
-    aws configure
-    # Enter Access Key, Secret, Region, output format
-
-21. Create .env.aws
-    cp .env.aws.example .env.aws
-    # Fill in AWS_ACCOUNT_ID, AWS_REGION
-    # Leave EC2_HOST blank (script auto-launches instance)
-
-22. Run one-shot deploy script
-    chmod +x scripts/setup-and-deploy.sh
-    ./scripts/setup-and-deploy.sh
-
-    What the script does automatically:
-    [1/10] Create EC2 key pair + save .pem to EC2_KEY_PATH
-    [2/10] Launch t3.micro (Amazon Linux 2023) with:
-           - IAM role (fluxforge-ec2-role → ECR read-only)
-           - Security group (ports 22, 80, 8081)
-           - 20GB gp3 storage
-           Writes EC2_HOST + APP_URL back to .env.aws
-    [3/10] Create ECR repos if missing
-    [4/10] ECR login (local Docker)
-    [5/10] Docker build (web + server, tagged SHA + latest)
-    [6/10] Docker push to ECR
-    [7/10] SCP compose files + nginx config to EC2
-    [8/10] SSH → bootstrap EC2:
-           - 2GB swap file (/swapfile, swappiness=10)
-           - Docker + Docker Compose plugin
-           - AWS CLI v2
-           - Write .env on server
-           - ECR login on EC2
-           - docker pull images
-           - docker compose up -d --remove-orphans
-    [9/10] Health check: GET /api/health → wait for HTTP 200
-```
-
----
-
-## Phase 5 — Iteration & Redeployment
-
-```
-23. Make code changes locally in Cursor
-
-24. Run tests
+21. Run tests
     node --test tests/
 
-25. Commit
+22. Commit and push to Bitbucket
     git add <specific files>
     git commit -m "feat/fix: description"
-
-26. Push to GitHub
     git push origin master
 
-27. Redeploy
-    ./scripts/setup-and-deploy.sh
-    Steps 1-4 skip (infra already exists)
-    Steps 5-9 rebuild + push + restart stack
+23. Rebuild and redeploy
+    pnpm build:web
+    rsync -av PIWeb/dist/ /var/www/fluxforge/
+    # If server code changed:
+    pm2 restart fluxforge-server
 
-28. Tag releases
+24. Tag releases
     git tag -a v1.x.x -m "Release description"
     git push origin master --tags
 ```
@@ -216,15 +165,10 @@ Validation:
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `UNABLE_TO_VERIFY_LEAF_SIGNATURE` in Docker | SSL intercepted by Docker Desktop on Windows | `RUN npm config set strict-ssl false && npm install -g pnpm` |
-| `corepack prepare` network failure | corepack fetches from npmjs.org, blocked by proxy | Replace with `npm install -g pnpm@x.x.x` |
-| SSH `Permission denied (publickey)` | EC2 launched with different key pair | Launch new instance with the correct key pair |
-| SSH path `C:/Program Files/Git/home/...` | Git Bash MSYS path mangling | Use Windows OpenSSH + `MSYS_NO_PATHCONV=1` |
-| `InvalidBlockDeviceMapping /dev/xvda` | Git Bash converts `/dev/` to Windows path | Prefix `aws run-instances` with `MSYS_NO_PATHCONV=1` |
-| `ecr:InitiateLayerUpload` denied | IAM user missing ECR push permissions | Add full ECR push action set to IAM policy |
-| ECR push to wrong account | `.env.aws` has placeholder `AWS_ACCOUNT_ID=123456789012` | Update with real 12-digit account ID |
-| `Unable to locate credentials` on EC2 | No IAM role attached to instance | Create `fluxforge-ec2-role` + instance profile, attach to instance |
-| `compose build requires buildx 0.17.0` | Prod compose missing `image:` override | Add `image: ${SERVER_IMAGE}` + `build: !reset null` |
-| `SERVER_IMAGE variable is not set` | `docker compose ps` not loading `.env.images` | Add `--env-file .env.images` to all compose commands |
-| `stat local /c/Projects/...` SCP error | Windows OpenSSH needs Windows-style paths | Apply `win_path()` function to convert paths before SCP |
-| EC2 SSH timeout on first launch | Instance needs ~20–30s after running state before SSH is ready | Script retries SSH 10 times with 10s delay |
+| `Cannot find module @fluxforge/shared` | pnpm workspace not installed | Run `pnpm install` from root |
+| Vite build: `Cannot resolve @tauri-apps/api/core` | Missing web stub | Check `PIWeb/vite.config.js` alias for tauri stub |
+| API 404 in dev | Vite proxy not configured | Check `server.proxy` in `PIWeb/vite.config.js` |
+| `ENOENT` on DB_PATH | Data directory not created | `mkdir -p /data/fluxforge && chown www-data /data/fluxforge` |
+| nginx 502 Bad Gateway | Express not running | `pm2 status` → `pm2 restart fluxforge-server` |
+| Blank page after deploy | index.html served from cache | `curl -H "Cache-Control: no-cache" http://localhost/` |
+| `<style scoped>` PostCSS error | Duplicate style block in .vue file | `grep -c '<style' <file>.vue` must return 1 |

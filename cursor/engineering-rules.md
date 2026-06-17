@@ -84,38 +84,12 @@ emit('update:uds', newUds);
 
 ---
 
-## Docker Rules
-
-- Never install pnpm via `corepack` inside Docker on Windows — use `npm install -g pnpm@x.x.x`
-- Set `npm config set strict-ssl false` before npm installs in Docker on corporate networks
-- The web image must never contain Node.js at runtime — only nginx:alpine
-- The server image mounts a named volume at `DB_PATH` — never bake the database into the image
-- Production compose always uses `image:` from ECR — never `build:` in production
-- Always include `--env-file .env` and `--env-file .env.images` in all `docker compose` commands on the server
-
----
-
-## Windows / SSH Rules
-
-- All SSH and SCP calls in bash scripts must use Windows OpenSSH: `C:/Windows/System32/OpenSSH/ssh.exe`
-- Convert Unix paths to Windows paths before passing to Windows OpenSSH:
-  ```bash
-  win_path() { local p="${1/#\~/$HOME}"; echo "$p" | sed 's|^/\([a-zA-Z]\)/|\1:/|'; }
-  WIN_KEY="$(win_path "$EC2_KEY_PATH")"
-  ```
-- Prefix all `aws` CLI calls that contain `/dev/` paths with `MSYS_NO_PATHCONV=1`
-- Prefix all SSH heredoc calls that pass Unix paths as env vars with `MSYS_NO_PATHCONV=1`
-- Always use `MSYS_NO_PATHCONV=1` before `"$SSH"` and `"$SCP"` calls
-
----
-
 ## Security Rules
 
-- Never commit `.env`, `.env.aws`, or `*.pem` files — all are in `.gitignore`
+- Never commit `.env` or `*.pem` files — all are in `.gitignore`
 - JWT secret minimum 32 characters
-- SQLite DB lives on a named Docker volume — never in the image layer
-- EC2 SSH port `:22` should be restricted to known IPs in production
-- IAM role `fluxforge-ec2-role` has read-only ECR access — do not grant write access to the instance role
+- SQLite DB file must not be inside the source tree — use an external data directory (e.g. `/data/fluxforge.db`)
+- SSH access to the server should be restricted to known IPs
 
 ---
 
@@ -125,4 +99,4 @@ emit('update:uds', newUds);
 2. **`@fluxforge/shared` import alias** — Must be updated atomically with package.json rename. Vite alias `@shared` must also be kept.
 3. **wizardActive reactivity** — Do NOT use `designWizardRef.value?.isActive?.value`. Use `designStore.wizardActive` only.
 4. **HIT_BOXES mixed property names** — SchematicDiagram.vue HIT_BOXES has mixed `h` and `height` properties. The overlay template handles both.
-5. **sql.js DB_PATH** — server/index.js uses `process.env.DB_PATH`. In Docker, mount a named volume at this path.
+5. **sql.js DB_PATH** — server/index.js uses `process.env.DB_PATH`. Point this to a directory outside the source tree on the server.

@@ -64,10 +64,10 @@ Expected output: [what the feature should do]
 Follow the output format: objective, scope, files, plan, diffs, validation, risks, next step.
 ```
 
-### Deployment debugging
+### Server debugging
 Paste the exact error output and ask:
 ```
-Here is the error from the deploy script:
+Here is the error from the server:
 [paste error]
 
 What is the root cause and what is the minimal fix?
@@ -129,9 +129,8 @@ Break work into phases. Never start phase N+1 without finishing phase N.
 Phase 0: Bootstrap (monorepo, package.json, workspace config)
 Phase 1: Core features (SimEngine, DesignWizard, Schematic, Magnetics)
 Phase 2: Branding (rename all references)
-Phase 3: Docker (Dockerfiles, compose, nginx)
-Phase 4: AWS (IAM, ECR, EC2, deploy script)
-Phase 5: Iteration (feature work, bugfixes, redeploys)
+Phase 3: Single-machine deployment (nginx + PM2)
+Phase 4: Iteration (feature work, bugfixes, redeploys)
 ```
 
 After each phase, validate before moving on:
@@ -141,11 +140,7 @@ grep -rn "TOPSwitch\|InnoSwitch" --include="*.vue" --include="*.js" --exclude-di
 # Expected: 0 results
 
 # Phase 3 validation
-docker compose up --build
-curl http://localhost:5200
-
-# Phase 4 validation
-curl http://$APP_URL/api/health
+curl http://localhost/api/health
 # Expected: HTTP 200
 ```
 
@@ -186,10 +181,10 @@ See `handoff-template.md` for the full template.
 
 | Action | Shortcut |
 |--------|---------|
-| Open file by name | Cmd/Ctrl + P |
-| Search across project | Cmd/Ctrl + Shift + F |
+| Open file by name | Ctrl + P |
+| Search across project | Ctrl + Shift + F |
 | Attach file to chat | @ in chat input |
-| Inline edit (Cmd+K) | Select code → Cmd/Ctrl + K |
+| Inline edit | Select code → Ctrl + K |
 | Accept diff | Click "Accept" in diff view |
 | Open terminal | Ctrl + ` |
 | Run test | Terminal: `node --test tests/sim-engine.test.js` |

@@ -18,6 +18,7 @@ Load these files at the start of every session.
 | [`architecture.md`](architecture.md) | Tech stack, monorepo, patterns | When making structural changes |
 | [`engineering-rules.md`](engineering-rules.md) | Coding standards and constraints | When in doubt |
 | [`poc-running.md`](poc-running.md) | Running web app and desktop build | Onboarding, environment setup |
-| [`workflow.md`](workflow.md) | Step-by-step build & deploy | Deploying, redeploying |
+| [`workflow.md`](workflow.md) | Step-by-step build & deploy | Deploying, iterating |
 | [`ai-workflow.md`](ai-workflow.md) | AI prompting patterns for this project | Starting new features |
 | [`handoff-template.md`](handoff-template.md) | Session handoff template | End/start of sessions |
+| [`build-history.md`](build-history.md) | Complete build history — prompts, features, libraries | Reference and onboarding |
